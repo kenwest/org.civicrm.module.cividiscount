@@ -334,7 +334,8 @@ function cividiscount_civicrm_buildAmount($pageType, &$form, &$amounts) {
     }
 
     $form->set('_discountInfo', NULL);
-    $discountCalculator = new CRM_CiviDiscount_DiscountCalculator($pageType, $eid, $contact_id, $code, FALSE);
+    $discountEntity = ($pageType == 'membership') ? 'membership_type' : 'event';
+    $discountCalculator = new CRM_CiviDiscount_DiscountCalculator($discountEntity, $eid, $contact_id, $code, FALSE);
 
     $discounts = $discountCalculator->getDiscounts();
 
@@ -387,7 +388,7 @@ function cividiscount_civicrm_buildAmount($pageType, &$form, &$amounts) {
       }
       // we should check for MultParticipant AND set Error Messages only if
       // this $discount is autodiscount or used discount
-      if ($autodiscount || (!empty($code) && $code == $discount['code'])){
+      if ($autodiscount || (!empty($code) && strcasecmp($code, $discount['code']) == 0)){
         $apcount = _cividiscount_checkEventDiscountMultipleParticipants($pageType, $form, $discount);
       }
       else {
@@ -578,7 +579,7 @@ function cividiscount_civicrm_membershipTypeValues(&$form, &$membershipTypeValue
 
   $form->set('_discountInfo', NULL);
   $code = CRM_Utils_Request::retrieve('discountcode', 'String', $form, false, null, 'REQUEST');
-  $discountCalculator = new CRM_CiviDiscount_DiscountCalculator('membership', NULL, $contact_id, $code, FALSE);
+  $discountCalculator = new CRM_CiviDiscount_DiscountCalculator('membership_type', NULL, $contact_id, $code, FALSE);
   if (!empty($code)) {
     $discounts = $discountCalculator->getDiscounts();
   }
@@ -1145,7 +1146,7 @@ function cividiscount_civicrm_navigationMenu( &$params ) {
       'attributes' => array (
         'label'      => 'CiviDiscount',
         'name'       => 'CiviDiscount',
-        'url'        => 'civicrm/cividiscount?reset=1',
+        'url'        => 'civicrm/cividiscount',
         'permission' => 'administer CiviCRM',
         'operator'   => NULL,
         'separator'  => TRUE,
@@ -1166,4 +1167,10 @@ function cividiscount_civicrm_entityTypes(&$entityTypes) {
     'class' => 'CRM_CiviDiscount_DAO_Item',
     'table' => 'cividiscount_item'
   );
+  $entityTypes['CRM_CiviDiscount_DAO_Track'] = array(
+    'name' => 'DiscountTrack',
+    'class' => 'CRM_CiviDiscount_DAO_Track',
+    'table' => 'cividiscount_track'
+  );
+
 }
